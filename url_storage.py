@@ -1,6 +1,6 @@
 #! python3
 
-import os, shelve, pyperclip, sys, json
+import os, pyperclip, sys, json, picture as pic
 
 #determine if getting from copyPaste or from command line or from input
 
@@ -9,7 +9,7 @@ def checkArguments(pictures):
    if (len(sys.argv) == 1):
       print("no command line arguments")
    elif (len(sys.argv) == 2):
-      appendItem(pictures, sys.argv[1])
+      appendItem(pictures, pic.Picture(sys.argv[1]))
    else:
       print("System only takes 1 image at a time, for now")
       sys.exit()
@@ -28,15 +28,31 @@ def quitProgram(pictures, cur_pointer):
 def listStorage(storage):
    print("Printing Storage")
    for x in storage:
-      print(x)
+      print(x.toString())
       
 def appendItem(pictures, item):
    print('appending to storage')
-   pictures.append(item)
-   
+   pictures.append(pic.Picture(item))
+
+
+def viewLatest(pictures,latest):
+         try:
+            if (latest < len(pictures)):
+               picture = pictures[latest]
+               print("Views: " + str(picture.views) + " " + picture.picture)
+               latest +=1
+            else:
+               print("End of list of length: " + str(len(pictures)))
+
+            return latest
+         except:
+            print("Out of images to pop")
+
+            
 def popOldest(pictures):
         try:
-            print(pictures.pop(0))
+            picture = pictures.pop(0)
+            print("Views: " + str(picture.views) + " " + picture.picture)
         except:
             print("Out of images to pop")
             
@@ -69,14 +85,6 @@ def main():
         except Exception as e:
             print("Error reading file: ", end="")
             print(e)
-             
-             
-##    with shelve.open('url_storage') as storage:
-##        if len(storage) == 0:
-##            #deal with having an empty storage file
-##            storage['pictures'] = pictures   
-##            print("Storage is empty")
-##        pictures = storage['pictures']
 
     checkArguments(pictures)
    
@@ -90,17 +98,16 @@ def main():
             listStorage(pictures)
             continue;
         elif (newPicture.lower() == 'p' or newPicture.lower() == 'pop'):
-            print("Getting oldest of : ", end="")
+            print("Getting oldest of : " + str(len(pictures)))
             popOldest(pictures)
             continue;
+        elif (newPicture.lower() == 'v' or newPicture.lower() == 'view'):
+            print("Last viewed value is: " + str(cur_pointer) + "/" \
+                 +  str(len(pictures)))
+            cur_pointer =  viewLatest(pictures,cur_pointer)
         else:
             appendItem(pictures, newPicture)
             
-    
-        
-##    with shelve.open('url_storage') as storage:
-##        storage['pictures'] = pictures   
-
-
+   
 if __name__ == '__main__':
     main()
