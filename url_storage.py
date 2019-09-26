@@ -9,7 +9,10 @@ def checkArguments(pictures):
    if (len(sys.argv) == 1):
       print("no command line arguments")
    elif (len(sys.argv) == 2):
-      appendItem(pictures, pic.Picture(sys.argv[1]))
+      if(sys.argv[1] == 'p'):
+         appendItem(pictures, pic.Picture(pyperclip.paste()))
+      else:
+         appendItem(pictures, pic.Picture(sys.argv[1]))
    else:
       print("System only takes 1 image at a time, for now")
       sys.exit()
@@ -19,7 +22,10 @@ def quitProgram(pictures, cur_pointer):
    
     print("Writing to json then closing")
     with open("url_storage.json","w") as storage:
-        pre_file = {'pointer': {'cur_pointer':cur_pointer}, 'pictures':pictures}
+        json_pictures = []
+        for x in pictures:
+            json_pictures.append(x.__dict__)
+        pre_file = {'pointer': {'cur_pointer':cur_pointer}, 'pictures':json_pictures}
         json.dump(pre_file, storage)
         
     print("Exiting Program")
@@ -80,8 +86,10 @@ def main():
             for i in json_file:
                 if(i == 'pointers'):
                     cur_pointer = json_file[i]['cur_pointer']
-                elif(i == 'pictures'):
-                    pictures = json_file[i]
+                elif(i == 'pictures'):                    
+                    for x in json_file[i]:
+                        pictures.append(pic.Picture(x['picture'], x['views']))
+                                        
         except Exception as e:
             print("Error reading file: ", end="")
             print(e)
@@ -105,6 +113,15 @@ def main():
             print("Last viewed value is: " + str(cur_pointer) + "/" \
                  +  str(len(pictures)))
             cur_pointer =  viewLatest(pictures,cur_pointer)
+        elif (newPicture.lower() =='?' or newPicture.lower() == 'help'):
+            print('''Commands:\n
+    (Q)uit -- exit program\n
+    (L)ist -- list all stored pictures and view count\n
+    (P)op  -- Pop the oldest image off and delete it\n
+    (V)iew -- Display oldest new iamge and increment view counts\n
+    (?)Help - Display this
+                    ''')
+                    
         else:
             appendItem(pictures, newPicture)
             
